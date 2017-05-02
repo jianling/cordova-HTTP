@@ -7,6 +7,9 @@
 
 - (void)setRequestHeaders:(NSDictionary*)headers forManager:(AFHTTPSessionManager*)manager;
 - (void)setResults:(NSMutableDictionary*)dictionary withTask:(NSURLSessionTask*)task;
+- (NSString *)getCookie:(NSString*)urlStr;
+- (NSString *)getCookie:(NSString*)urlStr withKey:(NSString*)key;
+
 
 @end
 
@@ -32,6 +35,44 @@
         [dictionary setObject:[NSNumber numberWithInt:response.statusCode] forKey:@"status"];
         [dictionary setObject:response.allHeaderFields forKey:@"headers"];
     }
+}
+
+- (NSString *)getCookie:(NSString*)urlStr {
+    NSURL *url = [NSURL URLWithString:urlStr];
+    NSString *hostUrl = [NSString stringWithFormat:@"%@://%@", url.scheme, url.host];
+
+    if (urlStr == nil) {
+        return @"";
+    }
+    else {
+        __block NSString* cookieStr = @"";
+        NSArray* cookies = [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookiesForURL:[NSURL URLWithString:hostUrl]];
+
+        [cookies enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            NSHTTPCookie *cookie = obj;
+
+            cookieStr = [cookieStr stringByAppendingFormat:@"%@=%@; ",cookie.name,cookie.value];
+        }];
+
+        return cookieStr;
+    }
+}
+
+- (NSString *)getCookie:(NSString*)urlStr withKey:(NSString*)key {
+    NSArray* cookies = [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookiesForURL:[NSURL URLWithString:urlStr]];
+    __block NSString *cookieValue;
+
+    [cookies enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        NSHTTPCookie *cookie = obj;
+
+        if([cookie.name isEqualToString:key])
+        {
+            cookieValue = cookie.value;
+            *stop = YES;
+        }
+    }];
+
+    return cookieValue;
 }
 
 - (void)enableSSLPinning:(CDVInvokedUrlCommand*)command {
@@ -69,9 +110,17 @@
 - (void)post:(CDVInvokedUrlCommand*)command {
     AFHTTPSessionManager *manager = [AFHTTPSessionManager manager];
     manager.securityPolicy = securityPolicy;
-    NSString *url = [command.arguments objectAtIndex:0];
-    NSDictionary *parameters = [command.arguments objectAtIndex:1];
-    NSDictionary *headers = [command.arguments objectAtIndex:2];
+    NSString* url = [command.arguments objectAtIndex:0];
+    NSDictionary* parameters = [command.arguments objectAtIndex:1];
+    NSDictionary* headers = [command.arguments objectAtIndex:2];
+
+    NSString* cookie = [self getCookie:url];
+    [headers setValue:cookie forKey:@"Cookie"];
+
+    NSString* csrftoken = [self getCookie:url withKey:@"bce-user-info"];
+    csrftoken = [csrftoken stringByReplacingOccurrencesOfString:@"\"" withString:@""];
+    [headers setValue:csrftoken forKey:@"csrftoken"];
+
     [self setRequestHeaders: headers forManager: manager];
 
     CordovaHttpPlugin* __weak weakSelf = self;
