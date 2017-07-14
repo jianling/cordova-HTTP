@@ -5,7 +5,7 @@
   version="1.2.0">
 
     <name>SSL Pinning</name>
- 
+
     <description>
         Cordova / Phonegap plugin for communicating with HTTP servers using SSL pinning
 	</description>
@@ -30,7 +30,7 @@
 
         <header-file src="src/ios/CordovaHttpPlugin.h" />
         <source-file src="src/ios/CordovaHttpPlugin.m" />
-        
+
         <header-file src="src/ios/TextResponseSerializer.h" />
         <source-file src="src/ios/TextResponseSerializer.m" />
 
@@ -69,7 +69,7 @@
         <config-file target="AndroidManifest.xml" parent="/manifest">
             <uses-permission android:name="android.permission.INTERNET" />
         </config-file>
-        
+
         <source-file src="src/android/com/synconset/CordovaHTTP/CordovaHttp.java" target-dir="src/com/synconset" />
         <source-file src="src/android/com/synconset/CordovaHTTP/CordovaHttpGet.java" target-dir="src/com/synconset" />
         <source-file src="src/android/com/synconset/CordovaHTTP/CordovaHttpPost.java" target-dir="src/com/synconset" />
@@ -80,4 +80,12 @@
         <source-file src="src/android/com/synconset/CordovaHTTP/HttpRequest.java" target-dir="src/com/github/kevinsawicki/http" />
         <source-file src="src/android/com/synconset/CordovaHTTP/TLSSocketFactory.java" target-dir="src/com/github/kevinsawicki/http" />
     </platform>
+
+    <!-- browser -->
+    <platform name="browser">
+        <js-module src="src/browser/HTTPProxy.js" name="HTTPProxy">
+            <merges target="" />
+        </js-module>
+    </platform>
+
 </plugin>

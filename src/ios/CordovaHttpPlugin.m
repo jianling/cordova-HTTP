@@ -2,6 +2,7 @@
 #import "CDVFile.h"
 #import "TextResponseSerializer.h"
 #import "AFHTTPSessionManager.h"
+#import "SAPIMainManager.h"
 
 @interface CordovaHttpPlugin()
 
@@ -115,7 +116,15 @@
     NSDictionary* headers = [command.arguments objectAtIndex:2];
 
     NSString* cookie = [self getCookie:url];
-    [headers setValue:cookie forKey:@"Cookie"];
+    SAPILoginModel* model = [SAPIMainManager sharedManager].currentLoginModel;
+//    NSString* bduss = @"BDUSS=ZCTDZ4UUVjRFlGMlU1dFFrbG9zeE01djVxRmtONzJ6Q3lyLThaYzNQaHlmVTlaSUFBQUFBJCQAAAAAAAAAAAEAAADAOUIGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHLwJ1ly8CdZTW;";
+    if (model != nil) {
+        NSString* bdussCookie = [[@"BDUSS=" stringByAppendingString:model.bduss] stringByAppendingString:@";"];
+        cookie = [cookie stringByReplacingOccurrencesOfString:@"BDUSS=[^;]*;" withString:bdussCookie options:NSRegularExpressionSearch range:NSMakeRange (0, cookie.length)];
+
+        cookie = [cookie stringByAppendingString:@" bce-login-type=PASSPORT;"];
+        [headers setValue:cookie forKey:@"Cookie"];
+    }
 
     NSString* csrftoken = [self getCookie:url withKey:@"bce-user-info"];
     csrftoken = [csrftoken stringByReplacingOccurrencesOfString:@"\"" withString:@""];
