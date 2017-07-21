@@ -28,7 +28,15 @@ public class CordovaHttpPost extends CordovaHttp implements Runnable {
             HttpRequest request = HttpRequest.post(this.getUrlString());
             this.setupSecurity(request);
             request.acceptCharset(CHARSET);
-            request.headers(this.getHeaders());
+
+            String csrftoken = this.getCookie(this.getUrlString(), "bce-user-info");
+            csrftoken = csrftoken.replaceAll("\"", "");
+
+            Map headers = this.getHeaders();
+            headers.put("Cookie", this.getCookie(this.getUrlString()));
+            headers.put("csrftoken", csrftoken);
+            request.headers(headers);
+
             request.send(new JSONObject(this.getParams()).toString());
             int code = request.code();
             String body = request.body(CHARSET);
